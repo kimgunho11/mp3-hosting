@@ -10,66 +10,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Generate index.html
-      run: |
-        echo '<!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>MP3 & GIF Files</title>
-          <style>
-            body {
-              font-family: sans-serif;
-              padding: 40px;
-              background: #1f1f1f;
-              color: #eee;
-            }
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-top: 20px;
-            }
-            th, td {
-              border: 1px solid #444;
-              padding: 10px;
-              text-align: left;
-            }
-            th {
-              background-color: #333;
-              font-weight: bold;
-            }
-            .timestamp {
-              color: #ccc;
-              font-size: 0.9em;
-            }
-          </style>
-        </head>
-        <body>
-          <h1>📁 MP3 & GIF File Index</h1>
-          <table>
-            <tr>
-              <th>File Name</th>
-              <th>Added At (KST)</th>
-            </tr>' > index.html
+      - name: Generate index.html
+        run: |
+          git fetch
+          git pull
 
-        for file in *.mp3 *.gif; do
-          if [[ -f "$file" && "$file" != "index.html" ]]; then
-            timestamp=$(TZ=Asia/Seoul date "+%Y-%m-%d %H:%M")
-            echo "            <tr><td><a href=\"$file\">$file</a></td><td class=\"timestamp\">$timestamp</td></tr>" >> index.html
-          fi
-        done
+          last_commit_time=$(git log -1 --format=%cd --date=format:'%Y-%m-%d %H:%M')
 
-        echo '          </table>
-        </body>
-        </html>' >> index.html
+          echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>File Index</title>' > index.html
+          echo '<style>
+            body { font-family: sans-serif; padding: 40px; background: #f5f5f5; color: #111; }
+            h1 { color: #444; }
+            table { border-collapse: collapse; margin-top: 20px; width: 100%; }
+            th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+            th { background-color: #eee; }
+            .new { color: green; font-weight: bold; }
+          </style></head><body>' >> index.html
 
-    - name: Commit and push index.html
-      run: |
-        git config user.name "github-actions"
-        git config user.email "github-actions@github.com"
-        git add index.html
-        git commit -m "🔄 Auto-update index.html"
-        git push
+          echo "<h1>📁 파일 목록 (자동 생성)</h1>" >> index.html
+          echo "<table><tr><th>파일 이름</th><th>업로드 시간</th></tr>" >> index.html
+
+          for file in *.mp3 *.gif; do
+            if [[ -f "$file" ]]; then
+              file_time=$(git log -1 --format="%cd" --date=format:'%Y-%m-%d %H:%M' -- "$file")
+              if [[ "$file_time" == "$last_commit_time" ]]; then
+                echo "<tr><td><a href=\"$file\" class=\"new\">$file 🔄</a></td><td>$file_time</td></tr>" >> index.html
+              else
+                echo "<tr><td><a href=\"$file\">$file</a></td><td>$file_time</td></tr>" >> index.html
+              fi
+            fi
+          done
+
+          echo '</table></body></html>' >> index.html
+
+      - name: Commit and push index.html
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add index.html
+          if ! git diff --cached --quiet; then
+            git commit -m "🔄 Auto-update index.html"
+            git push
+          else
+            echo "✅ No changes to commit."
+
