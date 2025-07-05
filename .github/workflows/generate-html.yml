@@ -1,40 +1,36 @@
-    - name: Generate index.html
-      run: |
-        # 기존 파일 목록 백업
-        touch old_index.html
-        cp index.html old_index.html || true
+- name: Generate index.html
+  run: |
+    # 이전 index.html 백업
+    touch old_index.html
+    cp index.html old_index.html || true
 
-        echo '<!DOCTYPE html><html><head>
-        <meta charset="UTF-8">
-        <title>MP3 & GIF Files</title>
-        <style>
-          body { font-family: sans-serif; padding: 40px; background: #f9f9f9; color: #333; }
-          h1 { color: #444; }
-          ul { list-style-type: none; padding: 0; }
-          li { margin: 10px 0; }
-          a { text-decoration: none; color: #007acc; }
-          a:hover { text-decoration: underline; }
-          .new { color: green; font-weight: bold; }
-        </style>
-        </head><body><h1>📁 Available Files</h1>' > index.html
+    echo '<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <title>File Index</title>
+    <style>
+      body { font-family: sans-serif; padding: 40px; background: #f9f9f9; color: #333; }
+      h1 { color: #444; }
+      table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+      th { background-color: #eee; }
+      tr:nth-child(even) { background-color: #f2f2f2; }
+      .new { color: green; font-weight: bold; }
+    </style>
+    </head><body><h1>📁 파일 목록</h1>' > index.html
 
-        echo '<h2>🆕 새 파일</h2><ul>' >> index.html
+    echo '<table>
+    <tr><th>파일 이름</th><th>타입</th><th>비고</th></tr>' >> index.html
 
-        for file in *.mp3 *.gif; do
-          if [[ -f "$file" ]]; then
-            if ! grep -q "$file" old_index.html; then
-              now=$(date +"%H:%M")
-              echo "<li class=\"new\">$file - $now 추가됨</li>" >> index.html
-            fi
-          fi
-        done
+    for file in *.mp3 *.gif; do
+      if [[ -f "$file" ]]; then
+        ext="${file##*.}"
+        note=""
+        if ! grep -q "$file" old_index.html; then
+          now=$(date +"%H:%M")
+          note="<span class=\"new\">🆕 $now 추가됨</span>"
+        fi
+        echo "<tr><td><a href=\"$file\">$file</a></td><td>${ext^^}</td><td>$note</td></tr>" >> index.html
+      fi
+    done
 
-        echo '</ul><ul>' >> index.html
-
-        for file in *.mp3 *.gif; do
-          if [[ -f "$file" ]]; then
-            echo "<li><a href=\"$file\">$file</a></li>" >> index.html
-          fi
-        done
-
-        echo '</ul></body></html>' >> index.html
+    echo '</table></body></html>' >> index.html
