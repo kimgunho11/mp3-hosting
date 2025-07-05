@@ -15,7 +15,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Generate index.html with search function
+      - name: Generate index.html with styled media table
         run: |
           echo '<!DOCTYPE html>' > index.html
           echo '<html lang="ko">' >> index.html
@@ -24,7 +24,13 @@ jobs:
           echo '<meta name="viewport" content="width=device-width, initial-scale=1.0">' >> index.html
           echo '<title>📁 파일 목록</title>' >> index.html
           echo '<style>' >> index.html
-          echo 'body { font-family: sans-serif; padding: 20px; background: #f9f9f9; color: #333; }' >> index.html
+          echo "@font-face {" >> index.html
+          echo "  font-family: 'Paperlogy-8ExtraBold';" >> index.html
+          echo "  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-8ExtraBold.woff2') format('woff2');" >> index.html
+          echo "  font-weight: 800;" >> index.html
+          echo "  font-style: normal;" >> index.html
+          echo "}" >> index.html
+          echo 'body { font-family: "Paperlogy-8ExtraBold", sans-serif; padding: 20px; background: #f9f9f9; color: #333; }' >> index.html
           echo 'input[type="text"] { padding: 8px; width: 100%; margin-bottom: 10px; font-size: 1rem; }' >> index.html
           echo 'table { border-collapse: collapse; width: 100%; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }' >> index.html
           echo 'th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }' >> index.html
@@ -82,8 +88,8 @@ jobs:
 
       - name: Commit and push index.html
         run: |
-          git config user.name "김건호"
-          git config user.email "gunh612@naver.com"
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
           git add index.html
           git commit -m "🔄 index.html 자동 업데이트" || echo "No changes to commit"
           git push
