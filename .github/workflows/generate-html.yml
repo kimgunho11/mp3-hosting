@@ -1,66 +1,54 @@
-name: Generate HTML index
+name: Generate and Deploy index.html
 
 on:
   push:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          persist-credentials: false
 
       - name: Generate index.html
         run: |
-          echo "<!DOCTYPE html>" > index.html
-          echo "<html lang='ko'><head><meta charset='UTF-8'><title>파일 목록</title>" >> index.html
-          echo "<style>
-            body { font-family: sans-serif; padding: 40px; background: #f4f4f4; }
-            h1 { font-size: 2em; margin-bottom: 20px; }
-            table { width: 100%; border-collapse: collapse; background: #fff; }
-            th, td { padding: 12px; border: 1px solid #ddd; text-align: left; vertical-align: top; }
-            th { background: #eee; }
-            img { max-width: 200px; max-height: 150px; }
-            audio { width: 250px; }
-          </style></head><body>" >> index.html
+          echo '<!DOCTYPE html>' > index.html
+          echo '<html lang="ko">' >> index.html
+          echo '<head><meta charset="UTF-8"><title>MP3 & 이미지 파일 목록</title></head>' >> index.html
+          echo '<body>' >> index.html
+          echo '<h1>🎵 MP3 & 이미지 파일 모음</h1>' >> index.html
+          echo '<table border="1" cellspacing="0" cellpadding="5">' >> index.html
+          echo '<tr><th>파일명</th><th>같은 사진</th><th>업로드 시간</th></tr>' >> index.html
 
-          echo "<h1>📁 파일 목록</h1>" >> index.html
-          echo "<table><tr><th>파일명</th><th>업로드 시간</th><th>미리보기</th></tr>" >> index.html
+          for file in $(ls *.mp3 2>/dev/null | sort -V); do
+            base="${file%.mp3}"
+            image=""
+            time=$(git log -1 --format="%cd" --date=format:'%Y-%m-%d %H:%M:%S' -- "$file")
 
-          for file in *; do
-            if [[ -f "$file" && "$file" != "index.html" && "$file" != *.yml ]]; then
-              timestamp=$(git log -1 --format="%cd" --date=format:"%Y-%m-%d %H:%M" -- "$file" 2>/dev/null || echo "알 수 없음")
-              echo "<tr><td><a href=\"$file\">$file</a></td><td>$timestamp</td><td>" >> index.html
-
-              ext="${file##*.}"
-              ext_lower=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
-
-              if [[ "$ext_lower" == "mp3" ]]; then
-                echo "<audio controls><source src=\"$file\" type=\"audio/mpeg\"></audio>" >> index.html
-              elif [[ "$ext_lower" == "gif" || "$ext_lower" == "jpg" || "$ext_lower" == "png" ]]; then
-                echo "<img src=\"$file\" alt=\"$file\">" >> index.html
-              fi
-
-              echo "</td></tr>" >> index.html
+            if [ -f "$base.png" ]; then
+              image="<a href=\"$base.png\" target=\"_blank\">$base.png</a><br><img src=\"$base.png\" alt=\"미리보기\" width=\"100\">"
+            elif [ -f "$base.gif" ]; then
+              image="<a href=\"$base.gif\" target=\"_blank\">$base.gif</a><br><img src=\"$base.gif\" alt=\"미리보기\" width=\"100\">"
+            else
+              image="-"
             fi
+
+            echo "<tr><td><a href=\"$file\">$file</a></td><td>$image</td><td>$time</td></tr>" >> index.html
           done
 
-          echo "</table></body></html>" >> index.html
+          echo '</table>' >> index.html
+          echo '</body></html>' >> index.html
 
       - name: Commit and push index.html
-        env:
-          TOKEN: ${{ secrets.ACTIONS_DEPLOY_TOKEN }}
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add index.html
-          if ! git diff --cached --quiet; then
-            git commit -m "🔄 index.html 자동 생성"
-            git push https://x-access-token:${TOKEN}@github.com/${{ github.repository }} HEAD:main
-          fi
+          git commit -m "🔄 Update index.html with latest file list" || echo "No changes to commit"
+          git push
 
