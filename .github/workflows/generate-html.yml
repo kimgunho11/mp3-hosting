@@ -13,50 +13,48 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: List repo files (for debug)
+        run: ls -al
+
       - name: Generate index.html
-        shell: bash
         run: |
-          shopt -s nullglob
           echo "<!DOCTYPE html>" > index.html
           echo "<html lang='ko'><head><meta charset='UTF-8'><title>파일 목록</title>" >> index.html
           echo "<style>
-            body { font-family: sans-serif; padding: 40px; background: #f7f7f7; }
+            body { font-family: sans-serif; padding: 40px; background: #f0f0f0; }
             table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-            th { background-color: #eee; }
-            audio { width: 250px; }
+            th, td { padding: 8px; border: 1px solid #ccc; }
             img { max-width: 200px; max-height: 150px; }
+            audio { width: 250px; }
           </style></head><body>" >> index.html
 
           echo "<h1>📁 파일 목록</h1>" >> index.html
-          echo "<table><thead><tr><th>파일명</th><th>업로드 시간</th><th>미리보기</th></tr></thead><tbody>" >> index.html
+          echo "<table><tr><th>파일명</th><th>미리보기</th></tr>" >> index.html
 
-          for file in *.mp3 *.gif; do
-            if [ -f "$file" ]; then
-              timestamp=$(git log -1 --format="%cd" --date=format:"%Y-%m-%d %H:%M" -- "$file" || echo "시간정보 없음")
-              echo "<tr><td><a href=\"$file\">$file</a></td><td>$timestamp</td><td>" >> index.html
-              case "$file" in
-                *.mp3)
-                  echo "<audio controls><source src=\"$file\" type=\"audio/mpeg\"></audio>" >> index.html
-                  ;;
-                *.gif)
-                  echo "<img src=\"$file\" alt=\"$file\">" >> index.html
-                  ;;
-              esac
+          for file in *; do
+            if [[ -f "$file" ]]; then
+              echo "파일 확인됨: $file"  # 디버깅 로그
+              echo "<tr><td><a href=\"$file\">$file</a></td><td>" >> index.html
+
+              if [[ "$file" == *.mp3 ]]; then
+                echo "<audio controls><source src=\"$file\" type=\"audio/mpeg\"></audio>" >> index.html
+              elif [[ "$file" == *.gif ]]; then
+                echo "<img src=\"$file\" alt=\"$file\">" >> index.html
+              fi
+
               echo "</td></tr>" >> index.html
             fi
           done
 
-          echo "</tbody></table></body></html>" >> index.html
+          echo "</table></body></html>" >> index.html
 
-      - name: Commit and push index.html
+      - name: Git commit and push
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-
           git add index.html
           if ! git diff --cached --quiet; then
-            git commit -m "자동으로 index.html 업데이트"
+            git commit -m "🔄 index.html 자동 생성"
             git push
           else
-            echo "변경 사항 없음"
+            echo "index.html에 변경 없음"
