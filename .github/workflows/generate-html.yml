@@ -15,30 +15,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Generate index.html
+      - name: Generate index.html with all media files
         run: |
           echo '<!DOCTYPE html>' > index.html
           echo '<html lang="ko">' >> index.html
-          echo '<head><meta charset="UTF-8"><title>MP3 & 이미지 파일 목록</title></head>' >> index.html
+          echo '<head><meta charset="UTF-8"><title>📁 파일 목록</title></head>' >> index.html
           echo '<body>' >> index.html
-          echo '<h1>🎵 MP3 & 이미지 파일 모음</h1>' >> index.html
+          echo '<h1>📁 업로드된 파일 목록</h1>' >> index.html
           echo '<table border="1" cellspacing="0" cellpadding="5">' >> index.html
-          echo '<tr><th>파일명</th><th>같은 사진</th><th>업로드 시간</th></tr>' >> index.html
+          echo '<tr><th>파일명</th><th>미리보기</th><th>업로드 시간</th></tr>' >> index.html
 
-          for file in $(ls *.mp3 2>/dev/null | sort -V); do
-            base="${file%.mp3}"
-            image=""
+          for file in $(ls *.* 2>/dev/null | sort -V); do
             time=$(git log -1 --format="%cd" --date=format:'%Y-%m-%d %H:%M:%S' -- "$file")
+            preview="-"
 
-            if [ -f "$base.png" ]; then
-              image="<a href=\"$base.png\" target=\"_blank\">$base.png</a><br><img src=\"$base.png\" alt=\"미리보기\" width=\"100\">"
-            elif [ -f "$base.gif" ]; then
-              image="<a href=\"$base.gif\" target=\"_blank\">$base.gif</a><br><img src=\"$base.gif\" alt=\"미리보기\" width=\"100\">"
-            else
-              image="-"
-            fi
+            case "$file" in
+              *.mp3)
+                preview="<audio controls src=\"$file\"></audio>"
+                ;;
+              *.png|*.jpg|*.jpeg|*.gif)
+                preview="<img src=\"$file\" width=\"100\">"
+                ;;
+            esac
 
-            echo "<tr><td><a href=\"$file\">$file</a></td><td>$image</td><td>$time</td></tr>" >> index.html
+            echo "<tr><td><a href=\"$file\">$file</a></td><td>$preview</td><td>$time</td></tr>" >> index.html
           done
 
           echo '</table>' >> index.html
@@ -49,6 +49,5 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add index.html
-          git commit -m "🔄 Update index.html with latest file list" || echo "No changes to commit"
+          git commit -m "🔄 index.html 자동 업데이트" || echo "No changes to commit"
           git push
-
