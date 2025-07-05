@@ -1,32 +1,40 @@
-name: Generate HTML index
+    - name: Generate index.html
+      run: |
+        # 기존 파일 목록 백업
+        touch old_index.html
+        cp index.html old_index.html || true
 
-on:
-  push:
-    branches:
-      - main
+        echo '<!DOCTYPE html><html><head>
+        <meta charset="UTF-8">
+        <title>MP3 & GIF Files</title>
+        <style>
+          body { font-family: sans-serif; padding: 40px; background: #f9f9f9; color: #333; }
+          h1 { color: #444; }
+          ul { list-style-type: none; padding: 0; }
+          li { margin: 10px 0; }
+          a { text-decoration: none; color: #007acc; }
+          a:hover { text-decoration: underline; }
+          .new { color: green; font-weight: bold; }
+        </style>
+        </head><body><h1>📁 Available Files</h1>' > index.html
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+        echo '<h2>🆕 새 파일</h2><ul>' >> index.html
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Generate index.html
-        run: |
-          echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>MP3 & GIF Files</title></head><body><h1>File List</h1><ul>' > index.html
-          for file in *.mp3 *.gif; do
-            if [[ -f "$file" ]]; then
-              echo "<li><a href=\"$file\">$file</a></li>" >> index.html
+        for file in *.mp3 *.gif; do
+          if [[ -f "$file" ]]; then
+            if ! grep -q "$file" old_index.html; then
+              now=$(date +"%H:%M")
+              echo "<li class=\"new\">$file - $now 추가됨</li>" >> index.html
             fi
-          done
-          echo '</ul></body></html>' >> index.html
+          fi
+        done
 
-      - name: Commit and push index.html
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add index.html
-          git commit -m "Auto-generate index.html"
-          git push
+        echo '</ul><ul>' >> index.html
+
+        for file in *.mp3 *.gif; do
+          if [[ -f "$file" ]]; then
+            echo "<li><a href=\"$file\">$file</a></li>" >> index.html
+          fi
+        done
+
+        echo '</ul></body></html>' >> index.html
