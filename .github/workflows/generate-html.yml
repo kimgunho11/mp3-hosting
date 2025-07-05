@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          persist-credentials: false  # We'll use token manually
+          persist-credentials: false
 
       - name: Generate index.html
         run: |
@@ -62,4 +62,5 @@ jobs:
           if ! git diff --cached --quiet; then
             git commit -m "🔄 index.html 자동 생성"
             git push https://x-access-token:${TOKEN}@github.com/${{ github.repository }} HEAD:main
+          fi
 
