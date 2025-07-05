@@ -30,13 +30,14 @@ jobs:
           echo "<h1>📁 파일 목록</h1>" >> index.html
           echo "<table><thead><tr><th>파일명</th><th>업로드 시간</th><th>미리보기</th></tr></thead><tbody>" >> index.html
 
+          shopt -s nullglob
           for file in *.mp3 *.gif; do
-            if [[ -f \"$file\" ]]; then
-              timestamp=$(git log -1 --format=\"%cd\" --date=format:\"%Y-%m-%d %H:%M\" -- \"$file\")
+            if [ -f "$file" ]; then
+              timestamp=$(git log -1 --format="%cd" --date=format:"%Y-%m-%d %H:%M" -- "$file")
               echo -n "<tr><td><a href=\"$file\">$file</a></td><td>$timestamp</td><td>" >> index.html
-              if [[ \"$file\" == *.mp3 ]]; then
+              if [[ "$file" == *.mp3 ]]; then
                 echo "<audio controls><source src=\"$file\" type=\"audio/mpeg\"></audio>" >> index.html
-              elif [[ \"$file\" == *.gif ]]; then
+              elif [[ "$file" == *.gif ]]; then
                 echo "<img src=\"$file\" alt=\"$file\">" >> index.html
               fi
               echo "</td></tr>" >> index.html
