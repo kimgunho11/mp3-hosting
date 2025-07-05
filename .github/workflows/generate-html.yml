@@ -8,52 +8,52 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Generate index.html
         run: |
-          git fetch
-          git pull
+          echo '<!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <title>MP3 & GIF Files</title>
+            <style>
+              body { font-family: sans-serif; padding: 40px; background: #f9f9f9; color: #111; }
+              h2 { color: #4b0082; }
+              table { border-collapse: collapse; margin-top: 1em; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+              tr.new td { background-color: #fffbcc; font-weight: bold; }
+            </style>
+          </head>
+          <body>
+            <h1>🎵 MP3 & 이미지 파일 모음</h1>' > index.html
 
-          last_commit_time=$(git log -1 --format=%cd --date=format:'%Y-%m-%d %H:%M')
-
-          echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>File Index</title>' > index.html
-          echo '<style>
-            body { font-family: sans-serif; padding: 40px; background: #f5f5f5; color: #111; }
-            h1 { color: #444; }
-            table { border-collapse: collapse; margin-top: 20px; width: 100%; }
-            th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-            th { background-color: #eee; }
-            .new { color: green; font-weight: bold; }
-          </style></head><body>' >> index.html
-
-          echo "<h1>📁 파일 목록 (자동 생성)</h1>" >> index.html
-          echo "<table><tr><th>파일 이름</th><th>업로드 시간</th></tr>" >> index.html
-
-          for file in *.mp3 *.gif; do
-            if [[ -f "$file" ]]; then
-              file_time=$(git log -1 --format="%cd" --date=format:'%Y-%m-%d %H:%M' -- "$file")
-              if [[ "$file_time" == "$last_commit_time" ]]; then
-                echo "<tr><td><a href=\"$file\" class=\"new\">$file 🔄</a></td><td>$file_time</td></tr>" >> index.html
-              else
-                echo "<tr><td><a href=\"$file\">$file</a></td><td>$file_time</td></tr>" >> index.html
-              fi
-            fi
+          echo "<h2>MP3 파일</h2>" >> index.html
+          echo "<table><tr><th>파일명</th><th>업로드 시간</th></tr>" >> index.html
+          for file in *.mp3; do
+            [[ -f "$file" ]] || continue
+            ts=$(git log -1 --format="%ci" -- "$file" 2>/dev/null || echo "Unknown")
+            echo "<tr><td><a href=\"$file\">$file</a></td><td>$ts</td></tr>" >> index.html
           done
+          echo "</table>" >> index.html
 
-          echo '</table></body></html>' >> index.html
+          echo "<h2>GIF 파일</h2>" >> index.html
+          echo "<table><tr><th>파일명</th><th>업로드 시간</th></tr>" >> index.html
+          for file in *.gif; do
+            [[ -f "$file" ]] || continue
+            ts=$(git log -1 --format="%ci" -- "$file" 2>/dev/null || echo "Unknown")
+            echo "<tr><td><a href=\"$file\">$file</a></td><td>$ts</td></tr>" >> index.html
+          done
+          echo "</table>" >> index.html
+
+          echo "</body></html>" >> index.html
 
       - name: Commit and push index.html
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add index.html
-          if ! git diff --cached --quiet; then
-            git commit -m "🔄 Auto-update index.html"
-            git push
-          else
-            echo "✅ No changes to commit."
-
+          git commit -m "Auto-generate index.html" || echo "No changes"
+          git push
