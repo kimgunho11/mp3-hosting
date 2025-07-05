@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          persist-credentials: false  # <== 핵심 설정!
+          persist-credentials: false  # 우리가 직접 토큰 넣을 거라 false
 
       - name: Generate index.html
         run: |
@@ -39,7 +39,7 @@ jobs:
 
               if [[ "$file" == *.mp3 ]]; then
                 echo "<audio controls><source src=\"$file\" type=\"audio/mpeg\"></audio>" >> index.html
-              elif [[ "$file" == *.gif ]]; then
+              elif [[ "$file" == *.gif || "$file" == *.jpg || "$file" == *.png ]]; then
                 echo "<img src=\"$file\" alt=\"$file\">" >> index.html
               fi
 
@@ -51,12 +51,13 @@ jobs:
 
       - name: Commit and push index.html
         env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TOKEN: ${{ secrets.ACTIONS_DEPLOY_TOKEN }}
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
           git add index.html
           if ! git diff --cached --quiet; then
             git commit -m "🔄 index.html 자동 생성"
             git push https://x-access-token:${TOKEN}@github.com/${{ github.repository }} HEAD:main
           fi
+
