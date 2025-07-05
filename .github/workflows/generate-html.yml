@@ -14,27 +14,26 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Generate index.html
+        shell: bash
         run: |
           shopt -s nullglob
-
           echo "<!DOCTYPE html>" > index.html
-          echo "<html lang='ko'>" >> index.html
-          echo "<head><meta charset='UTF-8'><title>파일 목록</title>" >> index.html
-          echo "<style>" >> index.html
-          echo "body { font-family: sans-serif; padding: 40px; background: #f7f7f7; }" >> index.html
-          echo "table { width: 100%; border-collapse: collapse; }" >> index.html
-          echo "th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }" >> index.html
-          echo "th { background-color: #eee; }" >> index.html
-          echo "audio { width: 250px; }" >> index.html
-          echo "img { max-width: 200px; max-height: 150px; }" >> index.html
-          echo "</style></head><body>" >> index.html
+          echo "<html lang='ko'><head><meta charset='UTF-8'><title>파일 목록</title>" >> index.html
+          echo "<style>
+            body { font-family: sans-serif; padding: 40px; background: #f7f7f7; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+            th { background-color: #eee; }
+            audio { width: 250px; }
+            img { max-width: 200px; max-height: 150px; }
+          </style></head><body>" >> index.html
 
           echo "<h1>📁 파일 목록</h1>" >> index.html
           echo "<table><thead><tr><th>파일명</th><th>업로드 시간</th><th>미리보기</th></tr></thead><tbody>" >> index.html
 
           for file in *.mp3 *.gif; do
             if [ -f "$file" ]; then
-              timestamp=$(git log -1 --format="%cd" --date=format:"%Y-%m-%d %H:%M" -- "$file")
+              timestamp=$(git log -1 --format="%cd" --date=format:"%Y-%m-%d %H:%M" -- "$file" || echo "시간정보 없음")
               echo "<tr><td><a href=\"$file\">$file</a></td><td>$timestamp</td><td>" >> index.html
               case "$file" in
                 *.mp3)
@@ -48,18 +47,16 @@ jobs:
             fi
           done
 
-          echo "</tbody></table>" >> index.html
-          echo "</body></html>" >> index.html
+          echo "</tbody></table></body></html>" >> index.html
 
-      - name: Commit and push changes
+      - name: Commit and push index.html
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
 
           git add index.html
           if ! git diff --cached --quiet; then
-            git commit -m "Update index.html with previews"
+            git commit -m "자동으로 index.html 업데이트"
             git push
           else
-            echo "No changes to commit."
-
+            echo "변경 사항 없음"
