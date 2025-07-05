@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          persist-credentials: false  # 우리가 직접 토큰 넣을 거라 false
+          persist-credentials: false  # We'll use token manually
 
       - name: Generate index.html
         run: |
@@ -37,9 +37,12 @@ jobs:
               timestamp=$(git log -1 --format="%cd" --date=format:"%Y-%m-%d %H:%M" -- "$file" 2>/dev/null || echo "알 수 없음")
               echo "<tr><td><a href=\"$file\">$file</a></td><td>$timestamp</td><td>" >> index.html
 
-              if [[ "$file" == *.mp3 ]]; then
+              ext="${file##*.}"
+              ext_lower=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
+
+              if [[ "$ext_lower" == "mp3" ]]; then
                 echo "<audio controls><source src=\"$file\" type=\"audio/mpeg\"></audio>" >> index.html
-              elif [[ "$file" == *.gif || "$file" == *.jpg || "$file" == *.png ]]; then
+              elif [[ "$ext_lower" == "gif" || "$ext_lower" == "jpg" || "$ext_lower" == "png" ]]; then
                 echo "<img src=\"$file\" alt=\"$file\">" >> index.html
               fi
 
@@ -59,5 +62,4 @@ jobs:
           if ! git diff --cached --quiet; then
             git commit -m "🔄 index.html 자동 생성"
             git push https://x-access-token:${TOKEN}@github.com/${{ github.repository }} HEAD:main
-          fi
 
