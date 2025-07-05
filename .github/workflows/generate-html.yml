@@ -18,9 +18,11 @@ jobs:
           echo "<!DOCTYPE html>" > index.html
           echo "<html lang='ko'><head><meta charset='UTF-8'><title>파일 목록</title>" >> index.html
           echo "<style>
-            body { font-family: sans-serif; padding: 40px; background: #f0f0f0; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { padding: 8px; border: 1px solid #ccc; text-align: left; }
+            body { font-family: sans-serif; padding: 40px; background: #f4f4f4; }
+            h1 { font-size: 2em; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; background: #fff; }
+            th, td { padding: 12px; border: 1px solid #ddd; text-align: left; vertical-align: top; }
+            th { background: #eee; }
             img { max-width: 200px; max-height: 150px; }
             audio { width: 250px; }
           </style></head><body>" >> index.html
@@ -30,7 +32,7 @@ jobs:
 
           for file in *; do
             if [[ -f "$file" && "$file" != "index.html" && "$file" != *.yml ]]; then
-              timestamp=$(git log -1 --format="%cd" --date=format:"%Y-%m-%d %H:%M" -- "$file" || echo "알 수 없음")
+              timestamp=$(git log -1 --format="%cd" --date=format:"%Y-%m-%d %H:%M" -- "$file" 2>/dev/null || echo "알 수 없음")
               echo "<tr><td><a href=\"$file\">$file</a></td><td>$timestamp</td><td>" >> index.html
 
               if [[ "$file" == *.mp3 ]]; then
@@ -45,7 +47,7 @@ jobs:
 
           echo "</table></body></html>" >> index.html
 
-      - name: Git commit and push
+      - name: Commit and push index.html
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
@@ -53,5 +55,4 @@ jobs:
           if ! git diff --cached --quiet; then
             git commit -m "🔄 index.html 자동 생성"
             git push
-          else
-            echo "index.html에 변경 사항 없음"
+          fi
