@@ -2,8 +2,13 @@ name: Generate and Deploy index.html
 
 on:
   push:
-    branches:
-      - main
+    paths:
+      - '**.mp3'
+      - '**.png'
+      - '**.jpg'
+      - '**.jpeg'
+      - '**.gif'
+      - '.github/workflows/generate-html.yml'
 
 permissions:
   contents: write
@@ -24,14 +29,8 @@ jobs:
           echo '<meta name="viewport" content="width=device-width, initial-scale=1.0">' >> index.html
           echo '<title>📁 파일 목록</title>' >> index.html
           echo '<style>' >> index.html
-          echo "@font-face {" >> index.html
-          echo "  font-family: 'Paperlogy-8ExtraBold';" >> index.html
-          echo "  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-8ExtraBold.woff2') format('woff2');" >> index.html
-          echo "  font-weight: 800;" >> index.html
-          echo "  font-style: normal;" >> index.html
-          echo "}" >> index.html
+          echo '@font-face { font-family: "Paperlogy-8ExtraBold"; src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-8ExtraBold.woff2") format("woff2"); font-weight: 800; font-style: normal; }' >> index.html
           echo 'body { font-family: "Paperlogy-8ExtraBold", sans-serif; padding: 20px; background: #f9f9f9; color: #333; }' >> index.html
-          echo 'input[type="text"] { padding: 8px; width: 100%; margin-bottom: 10px; font-size: 1rem; }' >> index.html
           echo 'table { border-collapse: collapse; width: 100%; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }' >> index.html
           echo 'th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }' >> index.html
           echo 'th { background-color: #f0f0f0; }' >> index.html
@@ -39,18 +38,18 @@ jobs:
           echo 'audio { width: 200px; }' >> index.html
           echo 'a { color: #007bff; text-decoration: none; }' >> index.html
           echo 'a:hover { text-decoration: underline; }' >> index.html
+          echo '#searchInput { margin: 10px 0; padding: 8px; width: 100%; max-width: 300px; }' >> index.html
           echo '</style>' >> index.html
           echo '</head>' >> index.html
           echo '<body>' >> index.html
           echo '<h1>📁 업로드된 파일 목록</h1>' >> index.html
-          echo '<input type="text" id="search" placeholder="파일명을 검색하세요..." onkeyup="searchFiles()">' >> index.html
-          echo '<table>' >> index.html
+          echo '<input type="text" id="searchInput" placeholder="🔍 파일명 검색" onkeyup="searchTable()">' >> index.html
+          echo '<table id="fileTable">' >> index.html
           echo '<tr><th>파일명</th><th>미리보기</th><th>업로드 시간</th></tr>' >> index.html
 
           for file in $(ls *.* 2>/dev/null | sort -V); do
             time=$(git log -1 --format="%cd" --date=format:'%Y-%m-%d %H:%M:%S' -- "$file")
             preview="-"
-
             case "$file" in
               *.mp3)
                 preview="<audio controls src=\"$file\"></audio>"
@@ -59,28 +58,20 @@ jobs:
                 preview="<img src=\"$file\">"
                 ;;
             esac
-
             echo "<tr><td><a href=\"$file\">$file</a></td><td>$preview</td><td>$time</td></tr>" >> index.html
           done
 
           echo '</table>' >> index.html
           echo '<script>' >> index.html
-          echo 'function searchFiles() {' >> index.html
-          echo '  var input, filter, table, tr, td, i, txtValue;' >> index.html
-          echo '  input = document.getElementById("search");' >> index.html
-          echo '  filter = input.value.toUpperCase();' >> index.html
-          echo '  table = document.getElementsByTagName("table")[0];' >> index.html
-          echo '  tr = table.getElementsByTagName("tr");' >> index.html
-          echo '  for (i = 1; i < tr.length; i++) {' >> index.html
-          echo '    td = tr[i].getElementsByTagName("td")[0];' >> index.html
-          echo '    if (td) {' >> index.html
-          echo '      txtValue = td.textContent || td.innerText;' >> index.html
-          echo '      if (txtValue.toUpperCase().indexOf(filter) > -1) {' >> index.html
-          echo '        tr[i].style.display = "";' >> index.html
-          echo '      } else {' >> index.html
-          echo '        tr[i].style.display = "none";' >> index.html
-          echo '      }' >> index.html
-          echo '    }' >> index.html
+          echo 'function searchTable() {' >> index.html
+          echo '  const input = document.getElementById("searchInput");' >> index.html
+          echo '  const filter = input.value.toLowerCase();' >> index.html
+          echo '  const table = document.getElementById("fileTable");' >> index.html
+          echo '  const rows = table.getElementsByTagName("tr");' >> index.html
+          echo '  for (let i = 1; i < rows.length; i++) {' >> index.html
+          echo '    const cell = rows[i].getElementsByTagName("td")[0];' >> index.html
+          echo '    const text = cell.textContent || cell.innerText;' >> index.html
+          echo '    rows[i].style.display = text.toLowerCase().indexOf(filter) > -1 ? "" : "none";' >> index.html
           echo '  }' >> index.html
           echo '}' >> index.html
           echo '</script>' >> index.html
@@ -91,5 +82,5 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add index.html
-          git commit -m "🔄 index.html 자동 업데이트" || echo "No changes to commit"
+          git diff --cached --quiet || git commit -m "🔄 index.html 자동 업데이트"
           git push
