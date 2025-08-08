@@ -1,0 +1,38 @@
+name: Update index.html
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - index.html
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate index.html
+        run: |
+          echo "<html><body><h1>파일 목록</h1><ul>" > index.html
+          for file in $(ls | grep -v index.html); do
+            echo "<li><a href='$file'>$file</a></li>" >> index.html
+          done
+          echo "</ul></body></html>" >> index.html
+
+      - name: Commit and push index.html
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "자동 업데이트: index.html" || echo "No changes"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
