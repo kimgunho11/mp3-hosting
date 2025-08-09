@@ -5,12 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>📁 파일 목록</title>
 <style>
-@font-face {
-  font-family: "Paperlogy-8ExtraBold";
-  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-8ExtraBold.woff2") format("woff2");
-  font-weight: 800;
-  font-style: normal;
-}
+@font-face { font-family: "Paperlogy-8ExtraBold"; src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-8ExtraBold.woff2") format("woff2"); font-weight: 800; font-style: normal; }
 body { font-family: "Paperlogy-8ExtraBold", sans-serif; padding: 20px; background: #f9f9f9; color: #333; }
 table { border-collapse: collapse; width: 100%; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
 th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
@@ -19,22 +14,26 @@ img { max-height: 100px; }
 audio { width: 200px; }
 a { color: #007bff; text-decoration: none; }
 a:hover { text-decoration: underline; }
+#searchInput { margin: 10px 0; padding: 8px; width: 100%; max-width: 300px; }
 </style>
-</head><body>
+</head>
+<body>
 <h1>📁 업로드된 파일 목록</h1>
-<input type="text" id="searchInput" placeholder="🔍 파일명 검색..." style="width:100%; padding:10px; margin-bottom:10px;">
+<input type="text" id="searchInput" placeholder="🔍 파일명 검색" onkeyup="searchTable()">
 <table id="fileTable">
 <tr><th>파일명</th><th>미리보기</th><th>업로드 시간</th></tr>
 </table>
 <script>
-document.getElementById("searchInput").addEventListener("input", function () {
-  let filter = this.value.toLowerCase();
-  let rows = document.querySelectorAll("#fileTable tr");
-  rows.forEach((row, i) => {
-    if (i === 0) return;
-    let text = row.cells[0].innerText.toLowerCase();
-    row.style.display = text.includes(filter) ? "" : "none";
-  });
-});
+function searchTable() {
+  const input = document.getElementById("searchInput");
+  const filter = input.value.toLowerCase();
+  const table = document.getElementById("fileTable");
+  const rows = table.getElementsByTagName("tr");
+  for (let i = 1; i < rows.length; i++) {
+    const cell = rows[i].getElementsByTagName("td")[0];
+    const text = cell.textContent || cell.innerText;
+    rows[i].style.display = text.toLowerCase().indexOf(filter) > -1 ? "" : "none";
+  }
+}
 </script>
 </body></html>
