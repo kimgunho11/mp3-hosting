@@ -4,7 +4,7 @@
   "servers": [
     {
       "id": "ghrjsrla_server",
-      "name": "봉방서버",
+      "name": "ghrjsrla 서버",
       "description": "1.19.4 패브릭 소듐 + 아이리스 최적화 서버",
       "icon": "https://raw.githubusercontent.com/kimgunho11/mp3-hosting/main/icon.png",
       "version": "1.19.4",
