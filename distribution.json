@@ -3,15 +3,26 @@
   "rss": "",
   "servers": [
     {
-      "id": "ghrjsrla_server",
+      "id": "main",
       "name": "ghrjsrla 서버",
-      "description": "1.19.4 테스트 서버",
+      "description": "테스트",
       "icon": "",
       "version": "1.19.4",
       "address": "ghrjsrla.mods.kr",
+      "minecraftVersion": "1.19.4",
       "mainServer": true,
       "autoconnect": false,
-      "modules": []
+      "modules": [
+        {
+          "id": "net.minecraft:client:1.19.4",
+          "name": "Minecraft",
+          "type": "Library",
+          "required": {
+            "value": true,
+            "def": true
+          }
+        }
+      ]
     }
   ]
 }
