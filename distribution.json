@@ -5,57 +5,13 @@
     {
       "id": "ghrjsrla_server",
       "name": "ghrjsrla 서버",
-      "description": "1.19.4 패브릭 소듐 + 아이리스 최적화 서버",
-      "icon": "https://raw.githubusercontent.com/kimgunho11/mp3-hosting/main/icon.png",
+      "description": "1.19.4 테스트 서버",
+      "icon": "",
       "version": "1.19.4",
       "address": "ghrjsrla.mods.kr",
-      "discord": {
-        "shortId": "",
-        "invite": ""
-      },
       "mainServer": true,
-      "autoconnect": true,
-      "modules": [
-        {
-          "id": "net.fabricmc:fabric-loader:0.14.22-1.19.4",
-          "name": "Fabric Loader",
-          "type": "Fabric",
-          "required": {
-            "value": true,
-            "def": true
-          }
-        },
-        {
-          "id": "sodium",
-          "name": "Sodium",
-          "type": "File",
-          "required": {
-            "value": true,
-            "def": true
-          },
-          "artifact": {
-            "size": 912345,
-            "MD5": "da6fc9b4a1b2c3d4e5f6a7b8c9d0e1f2",
-            "url": "https://github.com/kimgunho11/mp3-hosting/raw/refs/heads/main/sodium-fabric-mc1.19.4-0.4.10+build.24.jar"
-          },
-          "path": "mods/sodium-fabric-mc1.19.4-0.4.10+build.24.jar"
-        },
-        {
-          "id": "iris",
-          "name": "Iris Shaders",
-          "type": "File",
-          "required": {
-            "value": true,
-            "def": true
-          },
-          "artifact": {
-            "size": 2123456,
-            "MD5": "bc1234567890abcdef1234567890abcd",
-            "url": "https://github.com/kimgunho11/mp3-hosting/raw/refs/heads/main/iris-mc1.19.4-1.6.11.jar"
-          },
-          "path": "mods/iris-mc1.19.4-1.6.11.jar"
-        }
-      ]
+      "autoconnect": false,
+      "modules": []
     }
   ]
 }
